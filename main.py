@@ -17,6 +17,7 @@ async def run(url: str):
 
         target_url = url
         logging.info(f"Navigating to {target_url}...")
+        # Error handling for invalid URL
         try:
             # Visit the target URL
             await page.goto(target_url)
