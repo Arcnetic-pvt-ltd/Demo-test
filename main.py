@@ -1,6 +1,7 @@
 import asyncio
 from playwright.async_api import async_playwright
 import logging 
+import os
 
 #Logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -39,5 +40,5 @@ async def run(url: str):
             logging.info("Browser closed. Task completed.")
 
 if __name__ == "__main__":
-    url = input("Enter the URL to visit: ")
+    url = os.getenv("TARGET_URL", "https://default.com")  
     asyncio.run(run(url))

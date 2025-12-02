@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+# Crawler service
+  spider-crawler:
+   build: .
+   container_name: arcnetic_spider
+   volumes:
+     - .:/app
+   environment:
+     - PYTHONUNBUFFERED=1 #logs show up immediately
+     - TARGET_URL=https://arcnetic.com
+
+#localdb service
+  localdb:
+   image: postgres:15-alpine
+   container_name: spider_db
+   environment:
+     - POSTGRES_USER=admin
+     - POSTGRES_PASSWORD=admin@123
+     - POSTGRES_DB=spider_logs
+   ports:
+     - "5432:5432"
