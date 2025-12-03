@@ -3,9 +3,8 @@ import asyncio
 import logging
 import base64
 from datetime import datetime, timezone
-from tenacity import retry, stop_after_attempt, wait_fixed
 from dotenv import load_dotenv
-from playwright.async_api import async_playwright, Error, TimeoutError
+from playwright.async_api import async_playwright
 from database import SessionLocal, CrawlResult, init_db
 from sqlalchemy import select
 
