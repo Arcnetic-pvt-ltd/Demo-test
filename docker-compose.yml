@@ -32,3 +32,15 @@ services:
       interval: 5s
       retries: 3
       timeout: 3s
+
+   # Frontend service
+  spider-frontend:
+      build: ./frontend
+      ports:
+      - "3000:3000"
+      volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      environment:
+      # Use the Docker Service Name to talk to backend
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
