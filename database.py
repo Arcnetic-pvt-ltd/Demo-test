@@ -45,3 +45,8 @@ async def init_db(retries: int = 10, delay: float = 1.0):
             wait = delay * attempt
             print(f"init_db: attempt {attempt}/{retries} failed: {e!r}. Sleeping {wait}s and retrying...")
             await asyncio.sleep(wait)
+
+#dependency to get db session
+async def get_db():
+    async with SessionLocal() as session:
+        yield session

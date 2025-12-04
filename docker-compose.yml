@@ -4,7 +4,9 @@ services:
    build: .
    container_name: arcnetic_spider
    volumes:
-     - .:/app
+      - ./:/app
+   ports:
+      - "8000:8000"
    depends_on:
       local-db:
         condition: service_healthy
@@ -12,7 +14,6 @@ services:
       - .env
    environment:
       DATABASE_URL: ${DATABASE_URL}
-      TARGET_URL: ${TARGET_URL}
 
 #localdb service
   local-db:

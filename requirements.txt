@@ -3,4 +3,6 @@ sqlalchemy
 asyncpg
 greenlet
 python-dotenv
-tenacity
+fastapi
+uvicorn[standard]
+pydantic
