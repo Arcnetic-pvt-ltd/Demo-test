@@ -14,6 +14,34 @@ services:
       - .env
    environment:
       DATABASE_URL: ${DATABASE_URL}
+#redis service
+  redis:
+    image: redis:alpine
+    container_name: spider_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+#celery service
+  spider-celery:
+    build: .
+    container_name: arcnetic_spider_celery
+    command: celery -A tasks.celery_app worker --loglevel=info
+    volumes:
+      - ./:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+      local-db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
 
 #localdb service
   local-db:
