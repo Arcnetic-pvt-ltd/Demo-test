@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import FastAPI, BackgroundTasks, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, HttpUrl
@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 #importing modules
 from database import init_db, get_db, CrawlResult
-from crawler_engine import run_crawler_task
+from tasks import execute_crawler
 
 origins = [
     "http://localhost:3000",
@@ -40,34 +40,53 @@ class AuditSummary(BaseModel):
     screenshot_b64: str | None
 
 #---ROUTES---
-# Tirigger Crawl
+# Trigger Crawl (ASYNC USING CELERY)
 @app.post("/audit")
-async def start_audit(request: AuditRequest, background_tasks: BackgroundTasks):
-    background_tasks.add_task(run_crawler_task, str(request.url))
-    return {"status": "accepted", "message": "Crawler started"}
+async def start_audit(request: AuditRequest):
+
+    task = execute_crawler.delay(str(request.url))
+
+    return {
+        "status": "accepted",
+        "message": "Crawl task submitted successfully",
+        "task_id": task.id
+    }
 
 # Get All Audits
 @app.get("/audits", response_model=List[AuditSummary])
 async def get_audits(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(CrawlResult.id, CrawlResult.url, CrawlResult.title, CrawlResult.created_at, CrawlResult.screenshot_b64).order_by(CrawlResult.id.desc()))
+    result = await db.execute(
+        select(
+            CrawlResult.id,
+            CrawlResult.url,
+            CrawlResult.title,
+            CrawlResult.created_at,
+            CrawlResult.screenshot_b64
+        ).order_by(CrawlResult.id.desc())
+    )
     return result.all()
 
-#Getting single audit with screenshot
+# Get Single Audit
 @app.get("/audit/{id}", response_model=AuditSummary)
 async def get_audit(id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(CrawlResult).where(CrawlResult.id == id))
     audit = result.scalars().first()
+
     if not audit:
         raise HTTPException(status_code=404, detail="Audit not found")
+
     return audit
 
-# Delete an audit
+# Delete Audit
 @app.delete("/audit/{id}")
 async def delete_audit(id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(CrawlResult).where(CrawlResult.id == id))
     audit = result.scalars().first()
+
     if not audit:
         raise HTTPException(status_code=404, detail="Audit not found")
+
     await db.delete(audit)
     await db.commit()
+
     return {"status": "Deleted", "id": id}

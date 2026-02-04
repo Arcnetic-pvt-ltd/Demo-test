@@ -92,9 +92,14 @@ export default function Dashboard() {
     // 3. Start Scan and Polling
     setIsScanning(true); 
     await createAudit(url);
-    // Note: url state is kept for polling reference, cleared only when polling stops
+
+    // 🔹 Wait for background crawler then refresh UI
+    setTimeout(async () => {
+      const data = await fetchAudits();
+      setAudits(data);
+      setIsScanning(false);
+    }, 4000);
   };
-  
   // --- Rendering ---
   const statusText = isScanning ? "Scanning..." : "Start Scan";
 
