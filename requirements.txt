@@ -9,3 +9,11 @@ pydantic
 redis
 celery
 psycopg2-binary
+numpy
+huggingface-hub
+torch
+transformers
+sentence-transformers
+requests
+httpx
+
